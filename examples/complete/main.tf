@@ -46,12 +46,12 @@ resource "nodegrid_settings" "baseline" {
     "/settings/zpe_cloud/enable_remote_access" = "yes"
 
     # System preferences
-    "/settings/system_preferences/address_location"               = "Example DC, 100 Main St"
-    "/settings/system_preferences/coordinates"                    = "37.7749,-122.4194"
-    "/settings/system_preferences/idle_timeout"                   = "36000"
-    "/settings/system_preferences/show_hostname_on_webui_header"  = "yes"
-    "/settings/system_preferences/enable_banner"                  = "yes"
-    "/settings/system_preferences/banner"                         = "Authorized access only."
+    "/settings/system_preferences/address_location"              = "Example DC, 100 Main St"
+    "/settings/system_preferences/coordinates"                   = "37.7749,-122.4194"
+    "/settings/system_preferences/idle_timeout"                  = "36000"
+    "/settings/system_preferences/show_hostname_on_webui_header" = "yes"
+    "/settings/system_preferences/enable_banner"                 = "yes"
+    "/settings/system_preferences/banner"                        = "Authorized access only."
   }
 }
 
@@ -72,14 +72,14 @@ resource "nodegrid_settings" "ntp" {
 resource "nodegrid_settings" "eth0" {
   host = var.host
   settings = {
-    "/settings/network_connections/ETH0/connect_automatically"      = "yes"
-    "/settings/network_connections/ETH0/set_as_primary_connection"  = "yes"
-    "/settings/network_connections/ETH0/ipv4_mode"                  = "static"
-    "/settings/network_connections/ETH0/ipv4_address"               = var.host
-    "/settings/network_connections/ETH0/ipv4_bitmask"               = "24"
-    "/settings/network_connections/ETH0/ipv4_gateway"               = "192.0.2.1"
-    "/settings/network_connections/ETH0/ipv4_dns_server"            = "192.0.2.53"
-    "/settings/network_connections/ETH0/ipv6_mode"                  = "no_ipv6_address"
+    "/settings/network_connections/ETH0/connect_automatically"     = "yes"
+    "/settings/network_connections/ETH0/set_as_primary_connection" = "yes"
+    "/settings/network_connections/ETH0/ipv4_mode"                 = "static"
+    "/settings/network_connections/ETH0/ipv4_address"              = var.host
+    "/settings/network_connections/ETH0/ipv4_bitmask"              = "24"
+    "/settings/network_connections/ETH0/ipv4_gateway"              = "192.0.2.1"
+    "/settings/network_connections/ETH0/ipv4_dns_server"           = "192.0.2.53"
+    "/settings/network_connections/ETH0/ipv6_mode"                 = "no_ipv6_address"
   }
 
   depends_on = [nodegrid_settings.ntp]

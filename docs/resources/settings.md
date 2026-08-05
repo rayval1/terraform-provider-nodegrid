@@ -9,8 +9,18 @@ description: |-
 Manages an arbitrary set of Nodegrid settings-tree values on one device.
 Nodegrid configuration is a uniform tree of
 `/settings/<section>/<field>=<value>` pairs, so this one resource covers
-hostname, DNS, NTP, system preferences, serial port labels, and anything
-else expressible as a settings path.
+hostname, DNS, NTP, system preferences, ZPE Cloud enrollment, network
+interfaces, serial port attributes, and anything else expressible as a
+settings path. See [Common tasks](../guides/common-tasks.md) for worked
+examples.
+
+To find the path for a setting, run `export_settings /settings/<section>` on
+the device — the keys it prints are exactly what goes in `settings`.
+
+Note that *renaming* an object (a serial port, for instance) changes its key
+in the tree rather than setting a value, so it is not expressible here; use
+[`nodegrid_exec`](exec.md) for that, then manage the resulting paths with this
+resource.
 
 Reads run `export_settings` against the live device, so configuration drift
 appears in `terraform plan`.

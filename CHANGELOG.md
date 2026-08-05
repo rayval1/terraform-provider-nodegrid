@@ -1,5 +1,22 @@
 # Changelog
 
+## v0.1.2
+
+Documentation and examples only — no provider code changes.
+
+- New "Common tasks" guide covering hostname, DNS, NTP, system preferences,
+  ZPE Cloud, static addressing, serial ports, firewall rules, and same-device
+  ordering. Published to the registry docs, which render `docs/` rather than
+  `examples/`.
+- New `examples/hostname` (single device and fleet-wide, with drift check)
+  and `examples/serial-ports`.
+- Clarified in `nodegrid_settings` docs that *renaming* a tree object (e.g. a
+  serial port) is not a settings-path write and needs `nodegrid_exec`; the
+  previous wording implied `nodegrid_settings` handled port labels outright.
+- Provider index now states that the settings tree is open-ended rather than
+  limited to the documented sections, and explains discovering paths with
+  `export_settings`.
+
 ## v0.1.1
 
 - New `nodegrid_exec` resource: run raw CLI command batches for

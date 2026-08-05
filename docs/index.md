@@ -21,14 +21,29 @@ provider "nodegrid" {
   # password via the NODEGRID_PASSWORD environment variable
 }
 
-resource "nodegrid_settings" "dns" {
+resource "nodegrid_settings" "hostname" {
   host = "192.0.2.10"
   settings = {
-    "/settings/network_settings/global_dns_servers" = "192.0.2.53 198.51.100.53"
-    "/settings/network_settings/domain_name"        = "example.com"
+    "/settings/network_settings/hostname" = "console-server-01"
   }
 }
 ```
+
+## What it can manage
+
+Nodegrid stores its entire configuration as one uniform settings tree, so the
+single [`nodegrid_settings`](resources/settings.md) resource is not limited to
+any fixed list of features — hostname, DNS, NTP, system preferences, ZPE Cloud
+enrollment, network interfaces, serial port attributes, authentication, and
+services are all just paths. Run `export_settings /settings/<section>` on a
+device to discover the paths for anything not documented here.
+
+For configuration built with `add`/`delete`/`edit` instead of paths — firewall
+rules, DHCP scopes, NAT chains, bonding, port renames —
+[`nodegrid_exec`](resources/exec.md) runs raw CLI batches.
+
+See the [Common tasks](guides/common-tasks.md) guide for worked examples of
+each.
 
 ## Schema
 
