@@ -59,10 +59,12 @@ resource "nodegrid_settings" "baseline" {
 resource "nodegrid_settings" "ntp" {
   host = var.host
   settings = {
-    "/settings/date_and_time/ntp_mode"            = "client"
-    "/settings/date_and_time/ntp_server_1"        = "192.0.2.123"
-    "/settings/date_and_time/ntp_server_1_prefer" = "yes"
-    "/settings/date_and_time/ntp_server_2"        = "198.51.100.123"
+    # Verified against Nodegrid firmware via `export_settings
+    # /settings/date_and_time`. The mode field is named `date_and_time`, not
+    # `ntp_mode`, and there is one `server` field rather than a numbered list.
+    "/settings/date_and_time/date_and_time" = "network_time_protocol"
+    "/settings/date_and_time/server"        = "192.0.2.123"
+    "/settings/date_and_time/zone"          = "utc"
   }
 
   depends_on = [nodegrid_settings.baseline] # one config session per device

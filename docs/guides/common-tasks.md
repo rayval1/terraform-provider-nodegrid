@@ -71,19 +71,31 @@ resource "nodegrid_settings" "dns" {
 Multiple DNS servers are one space-joined string, not a list — `join(" ",
 var.dns_servers)` if you keep them as a list elsewhere.
 
-## NTP
+## NTP and timezone
 
 ```terraform
 resource "nodegrid_settings" "ntp" {
   host = "192.0.2.10"
   settings = {
-    "/settings/date_and_time/ntp_mode"          = "enabled"
-    "/settings/date_and_time/ntp_server_1"      = "192.0.2.123"
-    "/settings/date_and_time/ntp_server_1_prefer" = "yes"
-    "/settings/date_and_time/ntp_server_2"      = "198.51.100.123"
+    "/settings/date_and_time/date_and_time" = "network_time_protocol"
+    "/settings/date_and_time/server"        = "192.0.2.123"
+    "/settings/date_and_time/zone"          = "utc"
   }
 }
 ```
+
+~> **Field names here are not what you would guess.** The mode field is
+literally `date_and_time`, and the server field is `server` — not `ntp_mode`
+and `ntp_server_1`. This subtree also holds a single server field rather than
+a numbered list. Confirm against your own firmware before writing to it:
+
+```
+export_settings /settings/date_and_time
+```
+
+That advice applies to every section. The settings tree is firmware-specific,
+and `export_settings` is the authoritative list of what exists on the box in
+front of you.
 
 ## System preferences and ZPE Cloud
 

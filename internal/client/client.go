@@ -192,12 +192,23 @@ func SplitPath(path string) (section, field string, err error) {
 	return path[:idx], path[idx+1:], nil
 }
 
-// ParseExport extracts path=value lines from export_settings output,
-// ignoring prompts, echoes, and blank lines.
+// ParseExport extracts settings from export_settings output, ignoring
+// prompts, echoes, and blank lines.
+//
+// Nodegrid emits one setting per line as "<section> <field>=<value>", with a
+// SPACE between the section path and the field name:
+//
+//	/settings/network_settings hostname=in-bang-dc-1-105-cc1
+//	/settings/network_settings global_dns_servers="10.0.0.1 10.0.0.2"
+//
+// Those are normalized to the slash-joined form this provider uses everywhere
+// else ("/settings/network_settings/hostname"), so the keys returned here
+// match the keys callers write in a `settings` map. Lines already in the
+// slash-joined form are accepted unchanged.
 func ParseExport(out string) map[string]string {
 	settings := map[string]string{}
 	for _, line := range strings.Split(out, "\n") {
-		line = strings.TrimRight(strings.TrimSpace(line), "\r")
+		line = strings.TrimSpace(line)
 		if !strings.HasPrefix(line, "/") {
 			continue
 		}
@@ -206,12 +217,35 @@ func ParseExport(out string) map[string]string {
 			continue
 		}
 		key := strings.TrimSpace(line[:eq])
-		if strings.ContainsAny(key, " \t") {
-			continue // not a settings path (e.g. CLI chatter)
+		value := unquoteValue(strings.TrimSpace(line[eq+1:]))
+
+		// "<section> <field>" -> "<section>/<field>". Split on the FIRST
+		// whitespace: neither a section path nor a field name contains any, so
+		// a residual space means the line is CLI chatter, not a setting.
+		if i := strings.IndexAny(key, " \t"); i >= 0 {
+			section := key[:i]
+			field := strings.TrimSpace(key[i+1:])
+			if section == "" || field == "" || strings.ContainsAny(field, " \t") {
+				continue
+			}
+			key = section + "/" + field
 		}
-		settings[key] = strings.TrimSpace(line[eq+1:])
+		settings[key] = value
 	}
 	return settings
+}
+
+// unquoteValue reverses quoteValue for values the CLI echoes back quoted,
+// e.g. global_dns_servers="10.0.0.1 10.0.0.2". Without this, a value written
+// as an unquoted string would read back with quotes and report drift forever.
+func unquoteValue(v string) string {
+	if len(v) < 2 || !strings.HasPrefix(v, `"`) || !strings.HasSuffix(v, `"`) {
+		return v
+	}
+	inner := v[1 : len(v)-1]
+	inner = strings.ReplaceAll(inner, `\"`, `"`)
+	inner = strings.ReplaceAll(inner, `\\`, `\`)
+	return inner
 }
 
 func quoteValue(v string) string {

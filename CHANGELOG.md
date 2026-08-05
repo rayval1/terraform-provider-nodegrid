@@ -1,5 +1,28 @@
 # Changelog
 
+## v0.1.3
+
+**Fixes a bug that made every read return nothing.** Validated against a live
+Nodegrid (Bangalore CC1) — the first time this provider has been run against
+real hardware.
+
+- `ParseExport` now understands the format Nodegrid actually emits. Devices
+  print `"<section> <field>=<value>"` with a SPACE between the section path and
+  the field name; the parser expected `"<section>/<field>=<value>"` and
+  discarded every line as CLI chatter. Reads returned an empty map, so data
+  sources yielded `{}` and resources reported no drift no matter what changed
+  on the device. Keys are normalized to the slash-joined form, so nothing in
+  user configuration changes.
+- Values quoted by the CLI (e.g. `global_dns_servers="10.0.0.1 10.0.0.2"`) are
+  now unquoted on read. Without this, a value written unquoted read back with
+  quotes and reported drift on every plan forever.
+- Parser tests are now anchored to a verbatim device transcript. The previous
+  test asserted an invented format, which is why the bug shipped.
+- Corrected NTP settings paths in the guide and complete example: the mode
+  field is `date_and_time` and the server field is `server`, not `ntp_mode` /
+  `ntp_server_1`. Added guidance to verify any section with `export_settings`
+  before writing to it.
+
 ## v0.1.2
 
 Documentation and examples only — no provider code changes.
