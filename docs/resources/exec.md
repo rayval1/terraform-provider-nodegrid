@@ -42,6 +42,10 @@ resource "nodegrid_exec" "allow_ssh" {
 
 ### Optional
 
+- `jump_host` (String) Intermediate device to tunnel through, equivalent to
+  `ssh -J`. Use for devices on a NAT'd LAN reachable only from a router unit.
+  Reached with the same credentials and port as the target. Changing it forces replacement.
+
 - `destroy_commands` (List of String) Commands run on destroy — e.g. delete
   the rules the create batch added. If omitted, destroy leaves the device
   untouched.

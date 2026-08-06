@@ -29,6 +29,7 @@ func NewExecResource() resource.Resource {
 
 type execModel struct {
 	Host            types.String `tfsdk:"host"`
+	JumpHost        types.String `tfsdk:"jump_host"`
 	Commands        types.List   `tfsdk:"commands"`
 	DestroyCommands types.List   `tfsdk:"destroy_commands"`
 	Output          types.String `tfsdk:"output"`
@@ -52,6 +53,13 @@ func (r *execResource) Schema(_ context.Context, _ resource.SchemaRequest, resp 
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.RequiresReplace(),
 				},
+			},
+			"jump_host": schema.StringAttribute{
+				Optional: true,
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.RequiresReplace(),
+				},
+				Description: "Optional intermediate device to tunnel through, like ssh -J. Use for devices on a NAT'd LAN reachable only from a router unit. Reached with the same credentials and port as the target.",
 			},
 			"commands": schema.ListAttribute{
 				Required:    true,
@@ -93,7 +101,7 @@ func (r *execResource) Create(ctx context.Context, req resource.CreateRequest, r
 		return
 	}
 
-	out, err := r.runList(ctx, plan.Host.ValueString(), plan.Commands, &resp.Diagnostics)
+	out, err := r.runList(ctx, plan.Host.ValueString(), plan.JumpHost.ValueString(), plan.Commands, &resp.Diagnostics)
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -135,7 +143,7 @@ func (r *execResource) Delete(ctx context.Context, req resource.DeleteRequest, r
 		return
 	}
 
-	_, err := r.runList(ctx, state.Host.ValueString(), state.DestroyCommands, &resp.Diagnostics)
+	_, err := r.runList(ctx, state.Host.ValueString(), state.JumpHost.ValueString(), state.DestroyCommands, &resp.Diagnostics)
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -144,11 +152,11 @@ func (r *execResource) Delete(ctx context.Context, req resource.DeleteRequest, r
 	}
 }
 
-func (r *execResource) runList(ctx context.Context, host string, list types.List, diags *diag.Diagnostics) (string, error) {
+func (r *execResource) runList(ctx context.Context, host, jumpHost string, list types.List, diags *diag.Diagnostics) (string, error) {
 	var cmds []string
 	if d := list.ElementsAs(ctx, &cmds, false); d.HasError() {
 		diags.Append(d...)
 		return "", nil
 	}
-	return r.cfg.ClientFor(host).RunChecked(cmds)
+	return r.cfg.ClientForVia(host, jumpHost).RunChecked(cmds)
 }

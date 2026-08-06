@@ -1,5 +1,18 @@
 # Changelog
 
+## v0.2.0
+
+- **Jump-host support.** `nodegrid_settings`, `nodegrid_exec`, and the
+  `nodegrid_settings` data source accept an optional `jump_host`, tunnelling to
+  the target the way `ssh -J` does: a TCP connection is opened to the target
+  from the jump host, then a second SSH handshake runs over it, so
+  authentication to the target is end-to-end rather than delegated. This makes
+  devices on a NAT'd LAN behind a router unit manageable — previously the
+  provider could only reach directly-routable addresses.
+
+  Verified against a device at `192.168.0.2` reachable only through its router
+  unit; the same address is unreachable on a direct dial.
+
 ## v0.1.3
 
 **Fixes a bug that made every read return nothing.** Validated against a live

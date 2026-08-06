@@ -22,6 +22,7 @@ func NewSettingsDataSource() datasource.DataSource {
 
 type settingsDataModel struct {
 	Host     types.String `tfsdk:"host"`
+	JumpHost types.String `tfsdk:"jump_host"`
 	Path     types.String `tfsdk:"path"`
 	Settings types.Map    `tfsdk:"settings"`
 }
@@ -37,6 +38,10 @@ func (d *settingsDataSource) Schema(_ context.Context, _ datasource.SchemaReques
 			"host": schema.StringAttribute{
 				Required:    true,
 				Description: "Device IP or hostname to SSH into.",
+			},
+			"jump_host": schema.StringAttribute{
+				Optional:    true,
+				Description: "Optional intermediate device to tunnel through, like ssh -J. Use for devices on a NAT'd LAN reachable only from a router unit. Reached with the same credentials and port as the target.",
 			},
 			"path": schema.StringAttribute{
 				Required:    true,
@@ -70,7 +75,7 @@ func (d *settingsDataSource) Read(ctx context.Context, req datasource.ReadReques
 		return
 	}
 
-	device, err := d.cfg.ClientFor(model.Host.ValueString()).GetSettings([]string{model.Path.ValueString()})
+	device, err := d.cfg.ClientForVia(model.Host.ValueString(), model.JumpHost.ValueString()).GetSettings([]string{model.Path.ValueString()})
 	if err != nil {
 		resp.Diagnostics.AddError(
 			fmt.Sprintf("Failed to read settings from %s", model.Host.ValueString()),

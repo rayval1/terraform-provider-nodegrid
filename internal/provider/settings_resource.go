@@ -28,6 +28,7 @@ func NewSettingsResource() resource.Resource {
 
 type settingsModel struct {
 	Host     types.String `tfsdk:"host"`
+	JumpHost types.String `tfsdk:"jump_host"`
 	Settings types.Map    `tfsdk:"settings"`
 }
 
@@ -48,6 +49,13 @@ func (r *settingsResource) Schema(_ context.Context, _ resource.SchemaRequest, r
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.RequiresReplace(),
 				},
+			},
+			"jump_host": schema.StringAttribute{
+				Optional: true,
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.RequiresReplace(),
+				},
+				Description: "Optional intermediate device to tunnel through, like ssh -J. Use for devices on a NAT'd LAN reachable only from a router unit. Reached with the same credentials and port as the target.",
 			},
 			"settings": schema.MapAttribute{
 				Required:    true,
@@ -83,7 +91,7 @@ func (r *settingsResource) Create(ctx context.Context, req resource.CreateReques
 		return
 	}
 
-	if err := r.cfg.ClientFor(plan.Host.ValueString()).ApplySettings(settings); err != nil {
+	if err := r.cfg.ClientForVia(plan.Host.ValueString(), plan.JumpHost.ValueString()).ApplySettings(settings); err != nil {
 		resp.Diagnostics.AddError("Failed to apply settings", err.Error())
 		return
 	}
@@ -107,7 +115,7 @@ func (r *settingsResource) Read(ctx context.Context, req resource.ReadRequest, r
 		return
 	}
 
-	device, err := r.cfg.ClientFor(state.Host.ValueString()).GetSettings(sectionsOf(managed))
+	device, err := r.cfg.ClientForVia(state.Host.ValueString(), state.JumpHost.ValueString()).GetSettings(sectionsOf(managed))
 	if err != nil {
 		resp.Diagnostics.AddError(
 			fmt.Sprintf("Failed to read settings from %s", state.Host.ValueString()),
@@ -157,7 +165,7 @@ func (r *settingsResource) Update(ctx context.Context, req resource.UpdateReques
 	}
 
 	if len(changed) > 0 {
-		if err := r.cfg.ClientFor(plan.Host.ValueString()).ApplySettings(changed); err != nil {
+		if err := r.cfg.ClientForVia(plan.Host.ValueString(), plan.JumpHost.ValueString()).ApplySettings(changed); err != nil {
 			resp.Diagnostics.AddError("Failed to apply settings", err.Error())
 			return
 		}

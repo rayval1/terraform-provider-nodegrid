@@ -34,3 +34,11 @@ output "current_dns" {
 
 - `settings` (Map of String) Full setting path to value, as currently
   configured on the device.
+
+
+### Optional
+
+- `jump_host` (String) Intermediate device to tunnel through, equivalent to
+  `ssh -J`. Use for devices on a NAT'd LAN reachable only from a router unit.
+  Reached with the same credentials and port as the target; authentication to
+  the target is end-to-end, not delegated to the jump host.

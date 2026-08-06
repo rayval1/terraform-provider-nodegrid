@@ -178,6 +178,44 @@ resource "nodegrid_exec" "allow_ssh" {
 }
 ```
 
+## Devices behind a NAT'd LAN
+
+A common console-server topology puts one unit on the routable management
+network and the rest on a private LAN behind it, reachable only from that
+router unit. Set `jump_host` on the devices that need it:
+
+```terraform
+locals {
+  router = "198.51.100.55" # the reachable unit
+
+  racks = {
+    "101" = { ip = "192.168.0.2", behind_nat = true }
+    "102" = { ip = "192.168.0.3", behind_nat = true }
+    "105" = { ip = local.router, behind_nat = false }
+  }
+}
+
+resource "nodegrid_settings" "hostname" {
+  for_each = local.racks
+
+  host      = each.value.ip
+  jump_host = each.value.behind_nat ? local.router : null
+
+  settings = {
+    "/settings/network_settings/hostname" = "console-${each.key}"
+  }
+}
+```
+
+The tunnel is the equivalent of `ssh -J`: a TCP connection is opened to the
+target *from* the jump host, then a second SSH handshake runs over it, so
+authentication to the target is end-to-end rather than delegated. The jump
+host is reached with the same credentials and port as the target.
+
+Ordering matters here — if the router unit is itself managed by Terraform,
+make the devices behind it depend on it, so a change that drops the router's
+connectivity doesn't strand the run halfway through.
+
 ## Ordering
 
 A Nodegrid device permits **one configuration session at a time**. A second

@@ -26,12 +26,19 @@ type ProviderConfig struct {
 }
 
 func (p ProviderConfig) ClientFor(host string) *client.Client {
+	return p.ClientForVia(host, "")
+}
+
+// ClientForVia returns a client that tunnels through jumpHost when it is
+// non-empty, for devices on a NAT'd LAN behind a router unit.
+func (p ProviderConfig) ClientForVia(host, jumpHost string) *client.Client {
 	return client.New(client.Config{
 		Host:     host,
 		Port:     p.Port,
 		Username: p.Username,
 		Password: p.Password,
 		Timeout:  p.Timeout,
+		JumpHost: jumpHost,
 	})
 }
 

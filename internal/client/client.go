@@ -24,6 +24,12 @@ type Config struct {
 	Username string
 	Password string
 	Timeout  time.Duration
+
+	// JumpHost, when set, is an intermediate device to tunnel through — the
+	// equivalent of ssh -J. Nodegrid console servers routinely sit on a NAT'd
+	// LAN behind a router unit, reachable only from that unit. The jump host
+	// is reached with the same credentials and port as the target.
+	JumpHost string
 }
 
 type Client struct {
@@ -44,30 +50,12 @@ func New(cfg Config) *Client {
 // stdin (exactly like the `ssh host <<EOF` heredocs this replaces), and
 // returns the combined output.
 func (c *Client) Run(commands []string) (string, error) {
-	addr := net.JoinHostPort(c.cfg.Host, fmt.Sprintf("%d", c.cfg.Port))
-	sshCfg := &ssh.ClientConfig{
-		User: c.cfg.Username,
-		Auth: []ssh.AuthMethod{
-			ssh.Password(c.cfg.Password),
-			ssh.KeyboardInteractive(func(_, _ string, questions []string, _ []bool) ([]string, error) {
-				answers := make([]string, len(questions))
-				for i := range questions {
-					answers[i] = c.cfg.Password
-				}
-				return answers, nil
-			}),
-		},
-		// Console servers get reimaged and re-keyed; pinning host keys here
-		// would just recreate the StrictHostKeyChecking=no behavior debate.
-		HostKeyCallback: ssh.InsecureIgnoreHostKey(),
-		Timeout:         c.cfg.Timeout,
-	}
-
-	conn, err := ssh.Dial("tcp", addr, sshCfg)
+	addr := c.addr(c.cfg.Host)
+	conn, cleanup, err := c.dial()
 	if err != nil {
-		return "", fmt.Errorf("ssh dial %s: %w", addr, err)
+		return "", err
 	}
-	defer conn.Close()
+	defer cleanup()
 
 	session, err := conn.NewSession()
 	if err != nil {
@@ -98,6 +86,76 @@ func (c *Client) Run(commands []string) (string, error) {
 	}
 
 	return out.String(), nil
+}
+
+// sshConfig builds the client config used for both the target and, when
+// tunnelling, the jump host.
+func (c *Client) sshConfig() *ssh.ClientConfig {
+	return &ssh.ClientConfig{
+		User: c.cfg.Username,
+		Auth: []ssh.AuthMethod{
+			ssh.Password(c.cfg.Password),
+			ssh.KeyboardInteractive(func(_, _ string, questions []string, _ []bool) ([]string, error) {
+				answers := make([]string, len(questions))
+				for i := range questions {
+					answers[i] = c.cfg.Password
+				}
+				return answers, nil
+			}),
+		},
+		// Console servers get reimaged and re-keyed; pinning host keys here
+		// would just recreate the StrictHostKeyChecking=no behavior debate.
+		HostKeyCallback: ssh.InsecureIgnoreHostKey(),
+		Timeout:         c.cfg.Timeout,
+	}
+}
+
+func (c *Client) addr(host string) string {
+	return net.JoinHostPort(host, fmt.Sprintf("%d", c.cfg.Port))
+}
+
+// dial connects to the target device, tunnelling through JumpHost when one is
+// configured. The returned cleanup closes the tunnel and, when used, the
+// bastion connection underneath it.
+func (c *Client) dial() (*ssh.Client, func(), error) {
+	sshCfg := c.sshConfig()
+	target := c.addr(c.cfg.Host)
+
+	if c.cfg.JumpHost == "" {
+		conn, err := ssh.Dial("tcp", target, sshCfg)
+		if err != nil {
+			return nil, nil, fmt.Errorf("ssh dial %s: %w", target, err)
+		}
+		return conn, func() { conn.Close() }, nil
+	}
+
+	jump := c.addr(c.cfg.JumpHost)
+	bastion, err := ssh.Dial("tcp", jump, sshCfg)
+	if err != nil {
+		return nil, nil, fmt.Errorf("ssh dial jump host %s: %w", jump, err)
+	}
+
+	// Open a TCP connection to the target from the bastion, then run a second
+	// SSH handshake over it, so authentication to the target is end-to-end
+	// rather than delegated to the jump host.
+	tunnel, err := bastion.Dial("tcp", target)
+	if err != nil {
+		bastion.Close()
+		return nil, nil, fmt.Errorf("dial %s via jump host %s: %w", target, jump, err)
+	}
+
+	ncc, chans, reqs, err := ssh.NewClientConn(tunnel, target, sshCfg)
+	if err != nil {
+		tunnel.Close()
+		bastion.Close()
+		return nil, nil, fmt.Errorf("ssh handshake with %s via jump host %s: %w", target, jump, err)
+	}
+
+	conn := ssh.NewClient(ncc, chans, reqs)
+	return conn, func() {
+		conn.Close()
+		bastion.Close()
+	}, nil
 }
 
 // RunChecked runs the commands and returns an error if the CLI reported one.

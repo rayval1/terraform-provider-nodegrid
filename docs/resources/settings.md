@@ -47,6 +47,14 @@ resource "nodegrid_settings" "baseline" {
 - `settings` (Map of String) Map of full setting path (e.g.
   `/settings/network_settings/domain_name`) to desired value.
 
+
+### Optional
+
+- `jump_host` (String) Intermediate device to tunnel through, equivalent to
+  `ssh -J`. Use for devices on a NAT'd LAN reachable only from a router unit.
+  Reached with the same credentials and port as the target; authentication to
+  the target is end-to-end, not delegated to the jump host. Changing it forces replacement.
+
 ## Behavior notes
 
 - **Destroy does not touch the device.** There is no generic "unset" in the
