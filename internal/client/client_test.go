@@ -6,7 +6,7 @@ import (
 )
 
 // TestParseExportRealTranscript uses a VERBATIM transcript captured from a
-// Nodegrid running Bangalore CC1 (in-bang-dc-1-105-cc1), not a hand-written
+// Nodegrid device, not a hand-written
 // approximation. The original test invented a "<section>/<field>=<value>"
 // format that no device emits; it passed while the parser silently discarded
 // every real line, so `terraform plan` saw an empty settings map and reported
@@ -14,9 +14,9 @@ import (
 func TestParseExportRealTranscript(t *testing.T) {
 	out := "WARNING: Improper use of shell commands could lead to data loss,\r\n" +
 		"[admin@nodegrid /]# export_settings /settings/network_settings\r\n" +
-		"/settings/network_settings hostname=in-bang-dc-1-105-cc1\r\n" +
-		"/settings/network_settings domain_name=cscinfo.com\r\n" +
-		"/settings/network_settings global_dns_servers=\"10.34.131.138 10.34.163.129\"\r\n" +
+		"/settings/network_settings hostname=console-server-01\r\n" +
+		"/settings/network_settings domain_name=example.com\r\n" +
+		"/settings/network_settings global_dns_servers=\"192.0.2.53 198.51.100.53\"\r\n" +
 		"/settings/network_settings enable_ipv4_ip_forward=yes\r\n" +
 		"/settings/network_settings reverse_path_filtering=disabled\r\n" +
 		"not a setting line\r\n" +
@@ -24,9 +24,9 @@ func TestParseExportRealTranscript(t *testing.T) {
 
 	got := ParseExport(out)
 	want := map[string]string{
-		"/settings/network_settings/hostname":               "in-bang-dc-1-105-cc1",
-		"/settings/network_settings/domain_name":            "cscinfo.com",
-		"/settings/network_settings/global_dns_servers":     "10.34.131.138 10.34.163.129",
+		"/settings/network_settings/hostname":               "console-server-01",
+		"/settings/network_settings/domain_name":            "example.com",
+		"/settings/network_settings/global_dns_servers":     "192.0.2.53 198.51.100.53",
 		"/settings/network_settings/enable_ipv4_ip_forward": "yes",
 		"/settings/network_settings/reverse_path_filtering": "disabled",
 	}

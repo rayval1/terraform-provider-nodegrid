@@ -256,7 +256,7 @@ func SplitPath(path string) (section, field string, err error) {
 // Nodegrid emits one setting per line as "<section> <field>=<value>", with a
 // SPACE between the section path and the field name:
 //
-//	/settings/network_settings hostname=in-bang-dc-1-105-cc1
+//	/settings/network_settings hostname=console-server-01
 //	/settings/network_settings global_dns_servers="10.0.0.1 10.0.0.2"
 //
 // Those are normalized to the slash-joined form this provider uses everywhere

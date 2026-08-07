@@ -56,7 +56,7 @@ resource "nodegrid_settings" "identity" {
   host = each.value
   settings = {
     "/settings/network_settings/hostname" = format(
-      "in-bang-dc-1-%s-%s",
+      "console-%s-%s",
       each.key,
       each.key == var.router_rack ? "cc1" : "ce1",
     )

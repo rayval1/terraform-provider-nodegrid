@@ -57,7 +57,7 @@ locals {
     ttyS4 = "ilo1"
   }
 
-  # Post-rename names, e.g. in-bang-dc-1-105-spine.
+  # Post-rename names, e.g. console-server-01-spine.
   named = { for tty, role in local.ports : tty => "${local.prefix}-${role}" }
 
   descriptions = {

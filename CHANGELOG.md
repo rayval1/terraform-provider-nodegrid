@@ -1,5 +1,13 @@
 # Changelog
 
+## v0.2.2
+
+- Replaced site-specific values in tests, code comments, guides and examples
+  with RFC 5737 documentation addresses and generic hostnames. Earlier
+  versions embedded a real domain, real internal DNS server addresses, and a
+  real device hostname captured while validating the parser against live
+  hardware. No credentials were ever included.
+
 ## v0.2.1
 
 Documentation only — no provider code changes.
@@ -28,14 +36,13 @@ Documentation only — no provider code changes.
   devices on a NAT'd LAN behind a router unit manageable — previously the
   provider could only reach directly-routable addresses.
 
-  Verified against a device at `192.168.0.2` reachable only through its router
-  unit; the same address is unreachable on a direct dial.
+  Verified against a device reachable only through its router unit; the same
+  address is unreachable on a direct dial.
 
 ## v0.1.3
 
-**Fixes a bug that made every read return nothing.** Validated against a live
-Nodegrid (Bangalore CC1) — the first time this provider has been run against
-real hardware.
+**Fixes a bug that made every read return nothing.** Validated against live Nodegrid hardware — the first time this provider had
+been run against a real device.
 
 - `ParseExport` now understands the format Nodegrid actually emits. Devices
   print `"<section> <field>=<value>"` with a SPACE between the section path and

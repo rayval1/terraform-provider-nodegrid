@@ -24,7 +24,7 @@ so `nodegrid_settings` cannot express it. `nodegrid_exec` does the rename;
 
 ```terraform
 locals {
-  prefix = "in-bang-dc-1-105"
+  prefix = "console-server-01"
   ports = {
     ttyS1 = "s1"
     ttyS2 = "s2"
