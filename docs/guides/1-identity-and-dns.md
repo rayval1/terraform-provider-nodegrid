@@ -35,30 +35,30 @@ servers as a list elsewhere, `join(" ", var.dns_servers)`.
 Derive the name rather than repeating it, so the convention lives in one place:
 
 ```terraform
-variable "racks" {
+variable "devices" {
   type        = map(string)
-  description = "Rack number => management IP."
+  description = "Device key => management IP."
   default = {
-    "101" = "192.0.2.11"
-    "102" = "192.0.2.12"
-    "105" = "192.0.2.15"
+    "01" = "192.0.2.11"
+    "02" = "192.0.2.12"
+    "03" = "192.0.2.15"
   }
 }
 
-variable "router_rack" {
+variable "primary_device" {
   type    = string
-  default = "105"
+  default = "03"
 }
 
 resource "nodegrid_settings" "identity" {
-  for_each = var.racks
+  for_each = var.devices
 
   host = each.value
   settings = {
     "/settings/network_settings/hostname" = format(
       "console-%s-%s",
       each.key,
-      each.key == var.router_rack ? "cc1" : "ce1",
+      each.key == var.primary_device ? "primary" : "secondary",
     )
     "/settings/network_settings/domain_name"        = "example.com"
     "/settings/network_settings/global_dns_servers" = "192.0.2.53 198.51.100.53"
@@ -73,7 +73,7 @@ the address lives on the resource.
 
 ```terraform
 data "nodegrid_settings" "check" {
-  host = var.racks[var.router_rack]
+  host = var.devices[var.primary_device]
   path = "/settings/network_settings"
 
   depends_on = [nodegrid_settings.identity]

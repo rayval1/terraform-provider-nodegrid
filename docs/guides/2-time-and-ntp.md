@@ -58,7 +58,7 @@ those before use; their fields are not documented here.
 
 ```terraform
 resource "nodegrid_settings" "time" {
-  for_each = var.racks
+  for_each = var.devices
 
   host = each.value
   settings = {

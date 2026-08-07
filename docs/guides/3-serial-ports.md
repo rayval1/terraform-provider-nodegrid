@@ -26,10 +26,10 @@ so `nodegrid_settings` cannot express it. `nodegrid_exec` does the rename;
 locals {
   prefix = "console-server-01"
   ports = {
-    ttyS1 = "s1"
-    ttyS2 = "s2"
-    ttyS3 = "spine"
-    ttyS4 = "ilo1"
+    ttyS1 = "sw1"
+    ttyS2 = "sw2"
+    ttyS3 = "sw3"
+    ttyS4 = "bmc"
   }
   named = { for tty, role in local.ports : tty => "${local.prefix}-${role}" }
 }

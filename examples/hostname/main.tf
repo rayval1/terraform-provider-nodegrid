@@ -28,41 +28,41 @@ resource "nodegrid_settings" "hostname" {
 
 # --- A fleet, with a naming convention --------------------------------------
 #
-# Devices keyed by rack number. The hostname is derived rather than written out
+# Devices keyed by a short id. The hostname is derived rather than written out
 # per device, so the convention lives in one place.
 
-variable "racks" {
+variable "devices" {
   type        = map(string)
-  description = "Rack number to device management IP."
+  description = "Device key => management IP."
   default = {
-    "101" = "192.0.2.11"
-    "102" = "192.0.2.12"
-    "105" = "192.0.2.15"
+    "01" = "192.0.2.11"
+    "02" = "192.0.2.12"
+    "03" = "192.0.2.15"
   }
 }
 
 variable "site" {
   type        = string
-  description = "Site code used in the hostname, e.g. bang or mum."
-  default     = "bang"
+  description = "Site code used in the hostname."
+  default     = "site1"
 }
 
-variable "router_rack" {
+variable "primary_device" {
   type        = string
-  description = "The rack acting as LAN router; it gets the cc1 role suffix."
-  default     = "105"
+  description = "The device acting as router; it gets the primary role suffix."
+  default     = "03"
 }
 
 resource "nodegrid_settings" "fleet_hostname" {
-  for_each = var.racks
+  for_each = var.devices
 
   host = each.value
   settings = {
     "/settings/network_settings/hostname" = format(
-      "in-%s-dc-1-%s-%s",
+      "%s-console-%s-%s",
       var.site,
       each.key,
-      each.key == var.router_rack ? "cc1" : "ce1",
+      each.key == var.primary_device ? "primary" : "secondary",
     )
   }
 }
@@ -73,7 +73,7 @@ resource "nodegrid_settings" "fleet_hostname" {
 # or to pull the current value into other configuration.
 
 data "nodegrid_settings" "check" {
-  host = var.racks[var.router_rack]
+  host = var.devices[var.primary_device]
   path = "/settings/network_settings"
 
   depends_on = [nodegrid_settings.fleet_hostname]

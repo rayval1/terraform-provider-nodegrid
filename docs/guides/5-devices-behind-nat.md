@@ -29,16 +29,16 @@ data "nodegrid_settings" "behind_nat" {
 locals {
   router = "198.51.100.55"
 
-  racks = {
-    "101" = { ip = "192.168.0.2", behind_nat = true }
-    "102" = { ip = "192.168.0.3", behind_nat = true }
-    "103" = { ip = "192.168.0.4", behind_nat = true }
-    "105" = { ip = local.router, behind_nat = false }
+  devices = {
+    "01" = { ip = "192.168.0.2", behind_nat = true }
+    "02" = { ip = "192.168.0.3", behind_nat = true }
+    "03" = { ip = "192.168.0.4", behind_nat = true }
+    "04" = { ip = local.router, behind_nat = false }
   }
 }
 
 resource "nodegrid_settings" "hostname" {
-  for_each = local.racks
+  for_each = local.devices
 
   host      = each.value.ip
   jump_host = each.value.behind_nat ? local.router : null
@@ -69,11 +69,11 @@ strand the run halfway through:
 ```terraform
 resource "nodegrid_settings" "router" {
   host     = local.router
-  settings = { "/settings/network_settings/hostname" = "console-105" }
+  settings = { "/settings/network_settings/hostname" = "console-04" }
 }
 
 resource "nodegrid_settings" "behind" {
-  for_each = { for k, v in local.racks : k => v if v.behind_nat }
+  for_each = { for k, v in local.devices : k => v if v.behind_nat }
 
   host      = each.value.ip
   jump_host = local.router

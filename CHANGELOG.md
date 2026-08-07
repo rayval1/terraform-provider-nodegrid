@@ -1,5 +1,12 @@
 # Changelog
 
+## v0.2.3
+
+- Made all documentation and examples fully generic. Beyond the values removed
+  in v0.2.2, the guides still used a device-numbering scheme and hostname
+  convention that mirrored a specific deployment. Device keys, role suffixes,
+  serial-port role names and the hostname format string are now neutral.
+
 ## v0.2.2
 
 - Replaced site-specific values in tests, code comments, guides and examples

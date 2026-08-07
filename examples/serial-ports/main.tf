@@ -32,12 +32,12 @@ variable "host" {
 
 variable "site" {
   type    = string
-  default = "bang"
+  default = "site1"
 }
 
-variable "rack" {
+variable "device_id" {
   type    = string
-  default = "105"
+  default = "03"
 }
 
 variable "already_labeled" {
@@ -47,24 +47,24 @@ variable "already_labeled" {
 }
 
 locals {
-  prefix = "in-${var.site}-dc-1-${var.rack}"
+  prefix = "${var.site}-console-${var.device_id}"
 
   # Physical port to the role it carries.
   ports = {
-    ttyS1 = "s1"
-    ttyS2 = "s2"
-    ttyS3 = "spine"
-    ttyS4 = "ilo1"
+    ttyS1 = "sw1"
+    ttyS2 = "sw2"
+    ttyS3 = "sw3"
+    ttyS4 = "bmc"
   }
 
-  # Post-rename names, e.g. console-server-01-spine.
+  # Post-rename names, e.g. console-server-01-sw3.
   named = { for tty, role in local.ports : tty => "${local.prefix}-${role}" }
 
   descriptions = {
-    s1    = "Leaf switch 1 - rack ${var.rack}"
-    s2    = "Leaf switch 2 - rack ${var.rack}"
-    spine = "Spine switch - rack ${var.rack}"
-    ilo1  = "Server iLO - rack ${var.rack}"
+    sw1 = "Switch 1 - device ${var.device_id}"
+    sw2 = "Switch 2 - device ${var.device_id}"
+    sw3 = "Switch 3 - device ${var.device_id}"
+    bmc = "Server BMC - device ${var.device_id}"
   }
 }
 
