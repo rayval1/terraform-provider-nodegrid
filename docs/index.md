@@ -42,8 +42,8 @@ For configuration built with `add`/`delete`/`edit` instead of paths — firewall
 rules, DHCP scopes, NAT chains, bonding, port renames —
 [`nodegrid_exec`](resources/exec.md) runs raw CLI batches.
 
-See the [Common tasks](guides/common-tasks.md) guide for worked examples of
-each.
+See the [Overview](guides/0-overview.md) for what the settings tree reaches,
+and guides 1-7 for worked examples of each area.
 
 ## Schema
 

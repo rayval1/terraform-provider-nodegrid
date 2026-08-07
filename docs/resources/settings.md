@@ -11,7 +11,7 @@ Nodegrid configuration is a uniform tree of
 `/settings/<section>/<field>=<value>` pairs, so this one resource covers
 hostname, DNS, NTP, system preferences, ZPE Cloud enrollment, network
 interfaces, serial port attributes, and anything else expressible as a
-settings path. See [Common tasks](../guides/common-tasks.md) for worked
+settings path. See the [Overview](../guides/0-overview.md) and guides 1-7 for worked
 examples.
 
 To find the path for a setting, run `export_settings /settings/<section>` on

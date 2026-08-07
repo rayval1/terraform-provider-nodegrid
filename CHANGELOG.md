@@ -1,5 +1,23 @@
 # Changelog
 
+## v0.2.1
+
+Documentation only — no provider code changes.
+
+- Replaced the single "Common tasks" page with eight registry guides: an
+  overview plus seven worked examples (identity/DNS, time/NTP, serial ports,
+  network interfaces, jump host, firewall/DHCP/NAT, security hardening). The
+  registry renders `docs/`, so this is what a reader actually sees; previously
+  the only discoverable example was DNS, which made a general-purpose
+  settings-tree provider look DNS-only.
+- The overview lists all 58 settings sections a device exposes, to make clear
+  the provider is not limited to the documented ones.
+- New runnable roots under `examples/`: `ntp`, `network-interfaces`,
+  `jump-host`, `firewall-dhcp-nat`, `hardening`.
+- Documented the host-lockout fields in `/settings/services`, including that
+  periods are in minutes and a block presents as connection-refused on every
+  port while ICMP still answers.
+
 ## v0.2.0
 
 - **Jump-host support.** `nodegrid_settings`, `nodegrid_exec`, and the
